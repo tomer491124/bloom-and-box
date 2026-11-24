@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Bloom &amp; Box — ניהול</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&amp;family=Frank+Ruhl+Libre:wght@300;400&amp;family=Heebo:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAFAFA;--ink:#1E3A2B;--muted:#5B615C;--line:#E4E1DA;--gold:#D4AF37;--gold-ink:#7E6318;--green:#1F3D2B;--green2:#356B4C;--danger:#A33A2A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Heebo,system-ui,sans-serif;font-weight:300;font-size:15px;line-height:1.6}
+button,input,select,textarea{font-family:inherit;font-size:15px;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.55}
+:focus-visible{outline:1.5px solid #B8941F;outline-offset:2px}
+.serif{font-family:'Cormorant Garamond','Frank Ruhl Libre',serif;font-weight:300}
+.hidden{display:none!important}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 22px;border:0;border-radius:2px;background:linear-gradient(120deg,var(--green),var(--green2));color:#FAFAFA;letter-spacing:.04em;box-shadow:0 12px 26px -14px rgba(31,61,43,.6);transition:transform .3s ease,box-shadow .3s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:0 18px 32px -14px rgba(31,61,43,.65)}
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 16px;border:1px solid #D9D6CF;border-radius:2px;background:#FFF;color:var(--ink);transition:border-color .3s ease}
+.btn-ghost:hover{border-color:#B8941F}
+.btn-danger{color:var(--danger)}
+.btn-danger:hover{border-color:var(--danger)}
+.icon-btn{width:40px;min-height:40px;padding:0}
+label{display:block;font-size:13.5px;font-weight:500;margin-bottom:6px}
+input[type=text],input[type=email],input[type=password],input[type=number],select,textarea{width:100%;min-height:44px;padding:10px 12px;border:1px solid #D9D6CF;border-radius:2px;background:#FFF}
+textarea{resize:vertical;min-height:90px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:4px}
+.field{margin-bottom:18px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>*{flex:1 1 180px}
+
+/* login */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{width:min(420px,100%);background:#FFF;border-top:2px solid var(--gold);border-radius:4px;padding:40px 32px;box-shadow:0 40px 80px -50px rgba(31,61,43,.5)}
+.brand{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:30px;letter-spacing:.14em;direction:ltr;text-align:center}
+.brand em{color:#B8941F;letter-spacing:0}
+.brand-tag{direction:ltr;text-align:center;font-size:10px;letter-spacing:.4em;color:var(--gold-ink);margin:6px 0 28px}
+.error{background:#FBEDEA;color:var(--danger);border-radius:2px;padding:10px 12px;font-size:14px;margin-bottom:16px}
+
+/* dashboard */
+header.top{position:sticky;top:0;z-index:10;background:rgba(250,250,250,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.top-in .brand{font-size:24px;text-align:right}
+main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:22px}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{min-height:38px;padding:0 16px;border-radius:999px;border:1px solid #D9D6CF;background:#FFF}
+.pill.on{background:linear-gradient(120deg,var(--green),var(--green2));color:#FAFAFA;border-color:transparent}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.card{background:#FFF;border-radius:4px;overflow:hidden;box-shadow:0 24px 50px -36px rgba(31,61,43,.45);display:flex;flex-direction:column}
+.thumb{position:relative;aspect-ratio:4/5;background:#EEF2EA;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tag{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.92);border-radius:999px;padding:2px 10px;font-size:12px}
+.tag.out{background:var(--danger);color:#FFF}
+.card-body{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card-title{font-family:'Cormorant Garamond','Frank Ruhl Libre',serif;font-size:22px;line-height:1.2;margin:0}
+.meta{font-size:13px;color:var(--muted)}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.switch{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;user-select:none}
+.switch input{appearance:none;width:42px;height:24px;border-radius:999px;background:#D9D6CF;position:relative;cursor:pointer;transition:background .3s ease;margin:0;flex:none}
+.switch input::after{content:'';position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#FFF;transition:right .3s ease}
+.switch input:checked{background:var(--green2)}
+.switch input:checked::after{right:21px}
+.empty{padding:40px;text-align:center;background:#FFF;border-radius:4px;color:var(--muted)}
+
+/* editor */
+.overlay{position:fixed;inset:0;background:rgba(20,26,22,.4);z-index:30}
+.drawer{position:fixed;top:0;bottom:0;left:0;z-index:31;width:min(560px,100%);background:var(--bg);overflow-y:auto;box-shadow:30px 0 80px -30px rgba(20,26,22,.5)}
+.drawer-head{position:sticky;top:0;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--line);z-index:2}
+.drawer-body{padding:24px}
+.drawer-foot{position:sticky;bottom:0;background:#FFF;border-top:1px solid var(--line);padding:14px 24px;display:flex;gap:10px;justify-content:space-between;align-items:center}
+.img-box{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.img-preview{width:140px;aspect-ratio:4/5;border-radius:2px;background:#EEF2EA;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;text-align:center;flex:none}
+.img-preview img{width:100%;height:100%;object-fit:cover}
+.size-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.size-row input{flex:1}
+.size-row input[type=number]{flex:0 0 120px}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.check{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #D9D6CF;border-radius:999px;background:#FFF;font-size:14px;cursor:pointer}
+.check input{margin:0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:linear-gradient(120deg,var(--green),var(--green2));color:#FAFAFA;padding:12px 22px;border-radius:999px;box-shadow:0 20px 40px -18px rgba(20,26,22,.6);transition:all .4s ease;z-index:50;font-size:14px}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--danger)}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#FFF;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-width:560px){.drawer-body{padding:18px}.top-in .brand{font-size:20px}}
+</style>
+</head>
+<body>
+
+<!-- כניסה -->
+<section id="login-view" class="login-wrap hidden">
+  <form id="login-form" class="login-card" novalidate>
+    <div class="brand">Bloom <em>&amp;</em> Box</div>
+    <div class="brand-tag">ADMIN · ניהול החנות</div>
+    <div id="login-error" class="error hidden" role="alert"></div>
+    <div class="field">
+      <label for="email">מייל</label>
+      <input id="email" type="email" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label for="password">סיסמה</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button id="login-btn" class="btn" type="submit" style="width:100%">כניסה</button>
+    <p class="hint" style="text-align:center;margin-top:16px"><a href="index.html" style="color:var(--muted)">חזרה לאתר</a></p>
+  </form>
+</section>
+
+<!-- ניהול -->
+<section id="app-view" class="hidden">
+  <header class="top">
+    <div class="top-in">
+      <div>
+        <div class="brand">Bloom <em>&amp;</em> Box</div>
+        <div class="meta">ניהול מוצרים</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+        <span id="who" class="meta"></span>
+        <a class="btn-ghost" href="index.html" target="_blank" rel="noopener">לצפייה באתר</a>
+        <button id="logout-btn" class="btn-ghost" type="button">יציאה</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="toolbar">
+      <div class="pills" role="group" aria-label="סינון">
+        <button class="pill on" data-filter="all" type="button">הכל</button>
+        <button class="pill" data-filter="bouquet" type="button">זרים</button>
+        <button class="pill" data-filter="box" type="button">מארזים</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+        <input id="search" type="text" placeholder="חיפוש לפי שם" style="width:220px;max-width:100%">
+        <button id="add-btn" class="btn" type="button">+ מוצר חדש</button>
+      </div>
+    </div>
+    <p id="count" class="meta" style="margin:0 0 14px"></p>
+    <div id="grid" class="grid"></div>
+  </main>
+</section>
+
+<!-- עורך מוצר -->
+<div id="overlay" class="overlay hidden"></div>
+<aside id="drawer" class="drawer hidden" aria-label="עריכת מוצר">
+  <form id="edit-form" novalidate>
+    <div class="drawer-head">
+      <h2 id="edit-title" class="serif" style="margin:0;font-size:28px">מוצר חדש</h2>
+      <button id="close-btn" class="btn-ghost icon-btn" type="button" aria-label="סגירה">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div id="edit-error" class="error hidden" role="alert"></div>
+
+      <div class="field">
+        <label>תמונה</label>
+        <div class="img-box">
+          <div id="img-preview" class="img-preview">אין תמונה</div>
+          <div style="flex:1 1 200px;display:flex;flex-direction:column;gap:8px">
+            <label class="btn-ghost" for="img-input" style="margin:0;font-weight:400">בחירת תמונה</label>
+            <input id="img-input" type="file" accept="image/*" class="hidden">
+            <button id="img-remove" class="btn-ghost btn-danger" type="button">הסרת התמונה</button>
+            <div class="field" style="margin:4px 0 0">
+              <label for="img-focus">איזה חלק בתמונה להשאיר</label>
+              <select id="img-focus">
+                <option value="center">מרכז</option>
+                <option value="top">חלק עליון</option>
+                <option value="bottom">חלק תחתון</option>
+              </select>
+            </div>
+            <p class="hint">התמונה נחתכת אוטומטית ליחס 4:5 ומוקטנת, כדי שהאתר ייטען מהר.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="f-name">שם המוצר *</label>
+          <input id="f-name" type="text" required>
+        </div>
+        <div class="field">
+          <label for="f-cat">סוג</label>
+          <select id="f-cat">
+            <option value="bouquet">זר פרחים</option>
+            <option value="box">מארז מתנה</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-tagline">שורת פתיחה</label>
+        <input id="f-tagline" type="text" placeholder="לדוגמה: יש סיבה להרים כוסית.">
+      </div>
+
+      <div class="field">
+        <label for="f-desc">תיאור</label>
+        <textarea id="f-desc"></textarea>
+      </div>
+
+      <div class="field">
+        <label>גדלים ומחירים *</label>
+        <div id="sizes"></div>
+        <button id="add-size" class="btn-ghost" type="button">+ גודל נוסף</button>
+      </div>
+
+      <div class="field">
+        <label for="f-items">מה בפנים</label>
+        <input id="f-items" type="text" placeholder="יין אדום, נר סויה, שוקולד מריר">
+        <p class="hint">מפרידים בפסיקים.</p>
+      </div>
+
+      <div class="field">
+        <label>מתאים ל...</label>
+        <div id="occasions" class="checks"></div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="f-badge">תווית על התמונה</label>
+          <input id="f-badge" type="text" placeholder="לדוגמה: הנמכר ביותר">
+        </div>
+        <div class="field">
+          <label for="f-tint">צבע רקע (כשאין תמונה)</label>
+          <input id="f-tint" type="text" dir="ltr" placeholder="#E2E8DD">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="switch"><input id="f-stock" type="checkbox" checked> במלאי</label>
+      </div>
+      <div class="field">
+        <label class="switch"><input id="f-alcohol" type="checkbox"> המוצר מכיל אלכוהול</label>
+      </div>
+    </div>
+    <div class="drawer-foot">
+      <button id="delete-btn" class="btn-ghost btn-danger" type="button">מחיקת המוצר</button>
+      <button id="save-btn" class="btn" type="submit">שמירה</button>
+    </div>
+  </form>
+</aside>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ===== הגדרות Supabase (מפתח ציבורי, מותר שיופיע כאן) =====
+  var CONFIG = window.BB_CONFIG || {
+    url: 'https://zpnzitwzclwsmwteavkf.supabase.co',
+    key: 'sb_publishable_qtyICXjoLtsweB6_re74sA_sWrxzymd'
+  };
+  var BUCKET = 'product-images';
+  var SESSION_KEY = 'bb_admin_session';
+  var OCCASIONS = [
+    ['love', 'אהבה'], ['birthday', 'יום הולדת'], ['thanks', 'תודה'],
+    ['birth', 'הולדת תינוק'], ['getwell', 'החלמה'], ['home', 'בית חדש']
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var state = { session: null, products: [], filter: 'all', search: '', editing: null, newImage: null, removeImage: false };
+
+  // ===== עזרים =====
+  function toast(msg, isErr) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isErr ? ' err' : '');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { t.className = 'toast'; }, 3200);
+  }
+  function money(n) { return '₪' + Number(n || 0).toLocaleString('en-US'); }
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+  function showError(el, msg) { el.textContent = msg; el.classList.toggle('hidden', !msg); }
+  function hebrewError(e) {
+    var m = String((e && (e.message || e.error_description || e.msg)) || e || '');
+    if (/Invalid login credentials/i.test(m)) return 'המייל או הסיסמה לא נכונים.';
+    if (/Email not confirmed/i.test(m)) return 'המייל עוד לא אושר. אשרו אותו ב-Supabase או צרו את המשתמש עם Auto Confirm.';
+    if (/Failed to fetch|NetworkError/i.test(m)) return 'אין חיבור לשרת. בדקו את החיבור לאינטרנט.';
+    if (/row-level security|permission denied|not allowed/i.test(m)) return 'אין לחשבון הזה הרשאת מנהל.';
+    return m || 'משהו השתבש. נסו שוב.';
+  }
+
+  // ===== התחברות =====
+  function saveSession(s) {
+    state.session = s;
+    try { s ? localStorage.setItem(SESSION_KEY, JSON.stringify(s)) : localStorage.removeItem(SESSION_KEY); } catch (e) {}
+  }
+  function loadSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { return null; }
+  }
+  function authRequest(grant, body) {
+    return fetch(CONFIG.url + '/auth/v1/token?grant_type=' + grant, {
+      method: 'POST',
+      headers: { 'apikey': CONFIG.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().then(function (j) {
+        if (!r.ok) throw j;
+        return {
+          access_token: j.access_token,
+          refresh_token: j.refresh_token,
+          expires_at: Date.now() + (j.expires_in || 3600) * 1000,
+          email: (j.user && j.user.email) || body.email || (state.session && state.session.email) || ''
+        };
+      });
+    });
+  }
+  function validToken() {
+    var s = state.session;
+    if (!s) return Promise.reject(new Error('לא מחובר'));
+    if (s.expires_at - Date.now() > 60000) return Promise.resolve(s.access_token);
+    return authRequest('refresh_token', { refresh_token: s.refresh_token }).then(function (ns) {
+      saveSession(ns);
+      return ns.access_token;
+    }, function (e) { logout(true); throw e; });
+  }
+  function api(path, opts) {
+    opts = opts || {};
+    return validToken().then(function (token) {
+      var headers = Object.assign({ 'apikey': CONFIG.key, 'Authorization': 'Bearer ' + token }, opts.headers || {});
+      return fetch(CONFIG.url + path, Object.assign({}, opts, { headers: headers }));
+    }).then(function (r) {
+      if (r.status === 401) { logout(true); throw new Error('פג תוקף החיבור. היכנסו שוב.'); }
+      if (r.status === 204) return null;
+      return r.text().then(function (t) {
+        var j = t ? JSON.parse(t) : null;
+        if (!r.ok) throw (j || new Error('שגיאה ' + r.status));
+        return j;
+      });
+    });
+  }
+  function logout(expired) {
+    var s = state.session;
+    if (s && !expired) {
+      fetch(CONFIG.url + '/auth/v1/logout', { method: 'POST', headers: { 'apikey': CONFIG.key, 'Authorization': 'Bearer ' + s.access_token } }).catch(function () {});
+    }
+    saveSession(null);
+    closeEditor();
+    showLogin();
+    if (expired) showError($('login-error'), 'פג תוקף החיבור. היכנסו שוב.');
+  }
+
+  function showLogin() {
+    $('app-view').classList.add('hidden');
+    $('login-view').classList.remove('hidden');
+  }
+  function showApp() {
+    $('login-view').classList.add('hidden');
+    $('app-view').classList.remove('hidden');
+    $('who').textContent = state.session.email;
+    loadProducts();
+  }
+
+  function checkAdmin() {
+    return api('/rest/v1/admins?select=user_id').then(function (rows) {
+      if (!rows || !rows.length) throw new Error('החשבון הזה לא מוגדר כמנהל. הריצו את make-admin.sql עם המייל שלכם.');
+    });
+  }
+
+  $('login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = $('email').value.trim();
+    var password = $('password').value;
+    showError($('login-error'), '');
+    if (!email || !password) { showError($('login-error'), 'נא למלא מייל וסיסמה.'); return; }
+    var btn = $('login-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+    authRequest('password', { email: email, password: password })
+      .then(function (s) { saveSession(s); return checkAdmin(); })
+      .then(function () { $('password').value = ''; showApp(); })
+      .catch(function (err) { saveSession(null); showError($('login-error'), hebrewError(err)); })
+      .then(function () { btn.disabled = false; btn.textContent = 'כניסה'; });
+  });
+  $('logout-btn').addEventListener('click', function () { logout(false); });
+
+  // ===== מוצרים =====
+  function loadProducts() {
+    $('grid').innerHTML = '<div class="empty">טוען מוצרים…</div>';
+    return api('/rest/v1/products?select=*&order=sort.asc,created_at.asc').then(function (rows) {
+      state.products = rows || [];
+      renderGrid();
+    }).catch(function (e) {
+      $('grid').innerHTML = '';
+      var d = document.createElement('div'); d.className = 'empty'; d.textContent = hebrewError(e);
+      $('grid').appendChild(d);
+    });
+  }
+
+  function priceRange(p) {
+    var prices = (p.sizes || []).map(function (s) { return Number(s.price) || 0; }).filter(function (n) { return n > 0; });
+    if (!prices.length) return 'אין מחיר';
+    var lo = Math.min.apply(null, prices), hi = Math.max.apply(null, prices);
+    return lo === hi ? money(lo) : money(lo) + '–' + money(hi);
+  }
+
+  function visibleProducts() {
+    var q = state.search.trim();
+    return state.products.filter(function (p) {
+      return (state.filter === 'all' || p.cat === state.filter) && (!q || p.name.indexOf(q) >= 0);
+    });
+  }
+
+  function renderGrid() {
+    var grid = $('grid');
+    grid.innerHTML = '';
+    var list = visibleProducts();
+    $('count').textContent = list.length + ' מוצרים';
+    if (!list.length) {
+      var d = document.createElement('div'); d.className = 'empty';
+      d.textContent = state.products.length ? 'אין מוצרים שמתאימים לחיפוש.' : 'עוד אין מוצרים. לחצו על "מוצר חדש" כדי להתחיל.';
+      grid.appendChild(d);
+      return;
+    }
+    list.forEach(function (p) {
+      var idx = state.products.indexOf(p);
+      var card = document.createElement('article');
+      card.className = 'card';
+
+      var thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      thumb.style.background = p.tint || '#EEF2EA';
+      if (p.image_url) {
+        var img = document.createElement('img'); img.src = p.image_url; img.alt = p.name; img.loading = 'lazy';
+        thumb.appendChild(img);
+      } else {
+        thumb.appendChild(document.createTextNode('אין תמונה'));
+      }
+      var tag = document.createElement('span');
+      tag.className = 'tag' + (p.in_stock ? '' : ' out');
+      tag.textContent = p.in_stock ? (p.cat === 'box' ? 'מארז' : 'זר') : 'אזל מהמלאי';
+      thumb.appendChild(tag);
+      card.appendChild(thumb);
+
+      var body = document.createElement('div'); body.className = 'card-body';
+      var h = document.createElement('h3'); h.className = 'card-title'; h.textContent = p.name;
+      var meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = priceRange(p) + ((p.sizes || []).length > 1 ? ' · ' + p.sizes.length + ' גדלים' : '');
+      body.appendChild(h); body.appendChild(meta);
+
+      var sw = document.createElement('label'); sw.className = 'switch';
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!p.in_stock;
+      cb.addEventListener('change', function () { toggleStock(p, cb.checked, cb); });
+      sw.appendChild(cb); sw.appendChild(document.createTextNode('במלאי'));
+      body.appendChild(sw);
+
+      var actions = document.createElement('div'); actions.className = 'actions';
+      actions.appendChild(button('עריכה', 'btn-ghost', function () { openEditor(p); }));
+      var up = button('↑', 'btn-ghost icon-btn', function () { move(idx, -1); }); up.setAttribute('aria-label', 'להזיז למעלה'); up.disabled = idx === 0;
+      var dn = button('↓', 'btn-ghost icon-btn', function () { move(idx, 1); }); dn.setAttribute('aria-label', 'להזיז למטה'); dn.disabled = idx === state.products.length - 1;
+      actions.appendChild(up); actions.appendChild(dn);
+      body.appendChild(actions);
+      card.appendChild(body);
+      grid.appendChild(card);
+    });
+  }
+
+  function button(text, cls, fn) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = cls; b.textContent = text;
+    b.addEventListener('click', fn);
+    return b;
+  }
+
+  function patchProduct(id, fields) {
+    return api('/rest/v1/products?id=eq.' + encodeURIComponent(id), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify(fields)
+    }).then(function (rows) {
+      if (!rows || !rows.length) throw new Error('row-level security');
+      return rows[0];
+    });
+  }
+
+  function toggleStock(p, on, cb) {
+    cb.disabled = true;
+    patchProduct(p.id, { in_stock: on }).then(function (row) {
+      Object.assign(p, row); renderGrid();
+      toast(on ? 'המוצר חזר למלאי' : 'המוצר סומן כ"אזל מהמלאי"');
+    }).catch(function (e) { cb.checked = !on; cb.disabled = false; toast(hebrewError(e), true); });
+  }
+
+  function move(idx, dir) {
+    var j = idx + dir;
+    var a = state.products[idx], b = state.products[j];
+    if (!a || !b) return;
+    var sa = a.sort, sb = b.sort;
+    if (sa === sb) { sb = sa + dir; }
+    Promise.all([patchProduct(a.id, { sort: sb }), patchProduct(b.id, { sort: sa })]).then(function () {
+      a.sort = sb; b.sort = sa;
+      state.products[idx] = b; state.products[j] = a;
+      renderGrid();
+    }).catch(function (e) { toast(hebrewError(e), true); loadProducts(); });
+  }
+
+  document.querySelectorAll('[data-filter]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.filter = b.getAttribute('data-filter');
+      document.querySelectorAll('[data-filter]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      renderGrid();
+    });
+  });
+  $('search').addEventListener('input', function (e) { state.search = e.target.value; renderGrid(); });
+
+  // ===== עורך =====
+  function sizeRow(label, price) {
+    var row = document.createElement('div'); row.className = 'size-row';
+    var l = document.createElement('input'); l.type = 'text'; l.placeholder = 'שם הגודל, לדוגמה: קלאסי'; l.value = label || ''; l.setAttribute('aria-label', 'שם הגודל');
+    var p = document.createElement('input'); p.type = 'number'; p.min = '0'; p.step = '1'; p.inputMode = 'numeric'; p.placeholder = 'מחיר ₪'; p.value = price || ''; p.setAttribute('aria-label', 'מחיר בשקלים');
+    var x = button('✕', 'btn-ghost icon-btn', function () {
+      if ($('sizes').children.length > 1) row.remove(); else { l.value = ''; p.value = ''; }
+    });
+    x.setAttribute('aria-label', 'הסרת הגודל');
+    row.appendChild(l); row.appendChild(p); row.appendChild(x);
+    $('sizes').appendChild(row);
+  }
+  $('add-size').addEventListener('click', function () { sizeRow('', ''); });
+
+  function renderOccasions(selected) {
+    var box = $('occasions'); box.innerHTML = '';
+    OCCASIONS.forEach(function (o) {
+      var lab = document.createElement('label'); lab.className = 'check';
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = o[0]; cb.checked = selected.indexOf(o[0]) >= 0;
+      lab.appendChild(cb); lab.appendChild(document.createTextNode(o[1]));
+      box.appendChild(lab);
+    });
+  }
+
+  function setPreview(url) {
+    var box = $('img-preview'); box.innerHTML = '';
+    if (url) { var img = document.createElement('img'); img.src = url; img.alt = 'תצוגה מקדימה'; box.appendChild(img); }
+    else box.textContent = 'אין תמונה';
+    $('img-remove').classList.toggle('hidden', !url);
+  }
+
+  function openEditor(p) {
+    state.editing = p || null;
+    state.newImage = null; state.removeImage = false;
+    $('img-input').value = '';
+    showError($('edit-error'), '');
+    $('edit-title').textContent = p ? 'עריכת מוצר' : 'מוצר חדש';
+    $('f-name').value = p ? p.name : '';
+    $('f-cat').value = p ? p.cat : 'box';
+    $('f-tagline').value = p ? p.tagline : '';
+    $('f-desc').value = p ? p.description : '';
+    $('f-items').value = p ? (p.items || []).join(', ') : '';
+    $('f-badge').value = p ? p.badge : '';
+    $('f-tint').value = p ? p.tint : '#E2E8DD';
+    $('f-stock').checked = p ? !!p.in_stock : true;
+    $('f-alcohol').checked = p ? !!p.alcohol : false;
+    $('sizes').innerHTML = '';
+    var sizes = p && p.sizes && p.sizes.length ? p.sizes : [{ label: 'קלאסי', price: '' }];
+    sizes.forEach(function (s) { sizeRow(s.label, s.price); });
+    renderOccasions(p ? (p.occasions || []) : []);
+    setPreview(p ? p.image_url : null);
+    $('delete-btn').classList.toggle('hidden', !p);
+    $('overlay').classList.remove('hidden');
+    $('drawer').classList.remove('hidden');
+    $('drawer').scrollTop = 0;
+    setTimeout(function () { $('f-name').focus(); }, 50);
+  }
+  function closeEditor() {
+    $('overlay').classList.add('hidden');
+    $('drawer').classList.add('hidden');
+    if (state.newImage && state.newImage.url) URL.revokeObjectURL(state.newImage.url);
+    state.editing = null; state.newImage = null;
+  }
+  $('add-btn').addEventListener('click', function () { openEditor(null); });
+  $('close-btn').addEventListener('click', closeEditor);
+  $('overlay').addEventListener('click', closeEditor);
+  $('drawer').addEventListener('keydown', function (e) { if (e.key === 'Escape') closeEditor(); });
+
+  // חיתוך ל-4:5 והקטנה
+  function processImage(file, focus) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      var src = URL.createObjectURL(file);
+      img.onload = function () {
+        URL.revokeObjectURL(src);
+        var ratio = 4 / 5;
+        var sw = img.naturalWidth, sh = img.naturalHeight, sx = 0, sy = 0;
+        if (sw / sh > ratio) { var nw = sh * ratio; sx = (sw - nw) / 2; sw = nw; }
+        else {
+          var nh = sw / ratio;
+          sy = focus === 'top' ? 0 : focus === 'bottom' ? sh - nh : (sh - nh) / 2;
+          sh = nh;
+        }
+        var outW = Math.min(1200, Math.round(sw)), outH = Math.round(outW / ratio);
+        var c = document.createElement('canvas'); c.width = outW; c.height = outH;
+        var ctx = c.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+        c.toBlob(function (blob) {
+          if (blob && blob.type === 'image/webp') return resolve(blob);
+          c.toBlob(function (jpg) { jpg ? resolve(jpg) : reject(new Error('לא הצלחנו לעבד את התמונה.')); }, 'image/jpeg', 0.86);
+        }, 'image/webp', 0.86);
+      };
+      img.onerror = function () { URL.revokeObjectURL(src); reject(new Error('הקובץ שנבחר הוא לא תמונה שאפשר לפתוח.')); };
+      img.src = src;
+    });
+  }
+
+  function pickImage() {
+    var file = $('img-input').files[0];
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) { showError($('edit-error'), 'התמונה גדולה מדי (מעל 25MB).'); return; }
+    processImage(file, $('img-focus').value).then(function (blob) {
+      if (state.newImage && state.newImage.url) URL.revokeObjectURL(state.newImage.url);
+      state.newImage = { blob: blob, url: URL.createObjectURL(blob), file: file };
+      state.removeImage = false;
+      setPreview(state.newImage.url);
+    }).catch(function (e) { showError($('edit-error'), hebrewError(e)); });
+  }
+  $('img-input').addEventListener('change', pickImage);
+  $('img-focus').addEventListener('change', function () { if (state.newImage) { $('img-input').files.length ? pickImage() : null; } });
+  $('img-remove').addEventListener('click', function () {
+    state.newImage = null; state.removeImage = true; $('img-input').value = ''; setPreview(null);
+  });
+
+  function uploadImage(blob) {
+    var ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
+    var path = 'products/' + uid() + '.' + ext;
+    return api('/storage/v1/object/' + BUCKET + '/' + path, {
+      method: 'POST',
+      headers: { 'Content-Type': blob.type, 'x-upsert': 'true', 'cache-control': '31536000' },
+      body: blob
+    }).then(function () {
+      return { path: path, url: CONFIG.url + '/storage/v1/object/public/' + BUCKET + '/' + path };
+    });
+  }
+  function deleteImage(path) {
+    if (!path) return Promise.resolve();
+    return api('/storage/v1/object/' + BUCKET + '/' + path, { method: 'DELETE' }).catch(function () {});
+  }
+
+  function collect() {
+    var sizes = [];
+    $('sizes').querySelectorAll('.size-row').forEach(function (row) {
+      var ins = row.querySelectorAll('input');
+      var label = ins[0].value.trim(), price = Number(ins[1].value);
+      if (label || ins[1].value) sizes.push({ label: label || 'גודל אחד', price: price });
+    });
+    var occ = [];
+    $('occasions').querySelectorAll('input:checked').forEach(function (c) { occ.push(c.value); });
+    return {
+      name: $('f-name').value.trim(),
+      cat: $('f-cat').value,
+      tagline: $('f-tagline').value.trim(),
+      description: $('f-desc').value.trim(),
+      items: $('f-items').value.split(/[,،]/).map(function (s) { return s.trim(); }).filter(Boolean),
+      occasions: occ,
+      sizes: sizes,
+      badge: $('f-badge').value.trim(),
+      tint: /^#[0-9a-fA-F]{6}$/.test($('f-tint').value.trim()) ? $('f-tint').value.trim() : '#E2E8DD',
+      in_stock: $('f-stock').checked,
+      alcohol: $('f-alcohol').checked
+    };
+  }
+
+  $('edit-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var data = collect();
+    var err = '';
+    if (!data.name) err = 'חסר שם למוצר.';
+    else if (!data.sizes.length) err = 'צריך לפחות גודל אחד עם מחיר.';
+    else if (data.sizes.some(function (s) { return !(s.price > 0); })) err = 'לכל גודל צריך מחיר גדול מ-0.';
+    showError($('edit-error'), err);
+    if (err) return;
+
+    var btn = $('save-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> שומר…';
+    var editing = state.editing;
+    var oldPath = editing ? editing.image_path : null;
+    var step = Promise.resolve();
+    if (state.newImage) {
+      step = uploadImage(state.newImage.blob).then(function (up) { data.image_url = up.url; data.image_path = up.path; });
+    } else if (state.removeImage) {
+      data.image_url = null; data.image_path = null;
+    }
+    step.then(function () {
+      if (editing) return patchProduct(editing.id, data);
+      var maxSort = state.products.reduce(function (m, p) { return Math.max(m, p.sort || 0); }, 0);
+      data.sort = maxSort + 10;
+      return api('/rest/v1/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+        body: JSON.stringify(data)
+      }).then(function (rows) { return rows[0]; });
+    }).then(function (row) {
+      if ((state.newImage || state.removeImage) && oldPath && oldPath !== row.image_path) deleteImage(oldPath);
+      if (editing) Object.assign(editing, row); else state.products.push(row);
+      closeEditor();
+      renderGrid();
+      toast(editing ? 'השינויים נשמרו והם כבר באתר' : 'המוצר נוסף לאתר');
+    }).catch(function (e2) {
+      showError($('edit-error'), hebrewError(e2));
+    }).then(function () { btn.disabled = false; btn.textContent = 'שמירה'; });
+  });
+
+  $('delete-btn').addEventListener('click', function () {
+    var p = state.editing;
+    if (!p) return;
+    if (!window.confirm('למחוק את "' + p.name + '"? אי אפשר לבטל את זה.')) return;
+    api('/rest/v1/products?id=eq.' + encodeURIComponent(p.id), { method: 'DELETE' }).then(function () {
+      deleteImage(p.image_path);
+      state.products = state.products.filter(function (x) { return x !== p; });
+      closeEditor(); renderGrid();
+      toast('המוצר נמחק');
+    }).catch(function (e) { showError($('edit-error'), hebrewError(e)); });
+  });
+
+  // ===== התחלה =====
+  var saved = loadSession();
+  if (saved && saved.refresh_token) {
+    state.session = saved;
+    validToken().then(checkAdmin).then(showApp).catch(function () { saveSession(null); showLogin(); });
+  } else {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>

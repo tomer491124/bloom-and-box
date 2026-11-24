@@ -23,7 +23,6 @@ export function h(type, props, ...children) {
       let key = RENAME[k] || k;
       if (key === 'style' && typeof v === 'string') v = styleObj(v);
       else if (key.includes('-') && !KEEP.test(key)) key = camel(key);
-      if (key === 'aria-hidden' && typeof v === 'boolean') v = String(v);
       p[key] = v;
     }
     props = p;

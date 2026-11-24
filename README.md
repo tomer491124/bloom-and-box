@@ -1,37 +1,29 @@
 # Bloom & Box — The Art of Luxury Floral
 
-אתר תדמית וחנות (אב-טיפוס) לזרי פרחים ומארזי מתנה יוקרתיים, תל אביב.
-
-## מה יש כאן
 | קובץ | מה זה |
 | --- | --- |
-| `index.html` | הדף הראשי של האתר |
-| `app.js` | כל ההתנהגות של האתר: עגלה, סינון, הרכבת מארז, הטבת ₪300 |
-| `favicon.svg` | האייקון שמופיע בלשונית הדפדפן |
-| `source/` | קוד המקור, למפתח שימשיך לעבוד על האתר (לא צריך לגעת בו) |
+| `index.html` + `app.js` | אתר הלקוחות |
+| `admin.html` | דף הניהול: כניסה עם מייל וסיסמה, מוצרים, מחירים, תמונות |
+| `favicon.svg` | האייקון בלשונית הדפדפן |
+| `supabase/setup.sql` | הקמת המסד ב-Supabase (מריצים פעם אחת) |
+| `supabase/make-admin.sql` | הופך את המשתמש שלכם למנהל |
+| `source/` | קוד מקור למפתחים, לא צריך לגעת |
 
-## העלאה ל-GitHub Pages (בלי לכתוב קוד)
-1. נכנסים ל-github.com ופותחים חשבון (או מתחברים).
-2. לוחצים על **+** למעלה ← **New repository**. שם: `bloom-and-box`, בוחרים **Public**, ולוחצים **Create repository**.
-3. בעמוד שנפתח לוחצים על הקישור **uploading an existing file**.
-4. גוררים לחלון את **כל מה שבתוך** התיקייה `bloom-and-box` (הקבצים והתיקייה `source`), לא את התיקייה עצמה.
-5. למטה לוחצים **Commit changes**.
-6. עוברים ל-**Settings** ← בתפריט הצד **Pages**.
-7. תחת **Branch** בוחרים `main` ו-`/ (root)` ולוחצים **Save**.
-8. מחכים דקה-שתיים ומרעננים. למעלה תופיע הכתובת:
-   `https://<שם-המשתמש-שלכם>.github.io/bloom-and-box/`
+## הקמה ב-Supabase (פעם אחת, כ-10 דקות)
+1. **SQL Editor** ← **New query** ← מדביקים את כל התוכן של `supabase/setup.sql` ← **Run**.
+2. **Authentication** ← **Users** ← **Add user** ← **Create new user**: מייל וסיסמה לניהול, מסמנים **Auto Confirm User** ← **Create user**.
+3. **SQL Editor** ← **New query** ← מדביקים את `supabase/make-admin.sql`, מחליפים בו את `your-email@example.com` במייל משלב 2 ← **Run**. בתוצאה צריך להופיע המייל שלכם.
+4. מומלץ: **Authentication** ← **Sign In / Providers** ← מכבים **Allow new users to sign up** ← **Save**.
 
-## עדכון האתר בהמשך
-מעלים מחדש את `index.html` ו-`app.js` דרך **Add file ← Upload files** באותו מאגר, ו-GitHub מחליף את הקבצים הישנים.
+## העלאה ל-GitHub
+מעלים למאגר `bloom-and-box` את כל הקבצים (Add file ← Upload files). קבצים עם אותו שם מוחלפים לבד.
+
+- האתר: `https://<שם-משתמש>.github.io/bloom-and-box/`
+- הניהול: `https://<שם-משתמש>.github.io/bloom-and-box/admin.html`
 
 ## חשוב לדעת
-- זה אב-טיפוס: כפתור התשלום לא גובה כסף ולא שומר הזמנות. לחנות אמיתית צריך לחבר מערכת סליקה (למשל Shopify או סליקה ישראלית).
-- המאגר ציבורי, כך שכל אחד יכול לראות את הקבצים.
-- התמונות מסומנות כרגע כמקומות שמורים ([צילום: ...]) ויש להחליף אותן בצילומים אמיתיים.
-
-## למפתחים
-`app.js` נבנה מ-`source/app.jsx` (React 19) עם esbuild:
-```
-python3 source/convert.py source/Main.dc.html
-esbuild src/app.jsx --bundle --minify --jsx-factory=h --jsx-fragment=Fragment --define:process.env.NODE_ENV=\"production\" --outfile=app.js
-```
+- המפתח שבקבצים הוא המפתח הציבורי (publishable) ומותר שיופיע. את ה-secret key ואת סיסמת המסד לא שמים באתר.
+- אם Supabase לא זמין, האתר מציג את המוצרים המקוריים כדי שלא יישאר ריק.
+- שכחתם סיסמה? ב-Supabase ← Authentication ← Users ← בוחרים את המשתמש ← Send password recovery.
+- פריטי "הרכבת מארז אישי" (יין, נרות, מתוקים) עדיין קבועים בקוד.
+- התשלום באתר עדיין לא אמיתי.
