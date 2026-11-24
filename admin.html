@@ -233,6 +233,10 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
       <div class="field">
         <label class="switch"><input id="f-alcohol" type="checkbox"> המוצר מכיל אלכוהול</label>
       </div>
+      <div id="featured-field" class="field">
+        <label class="switch"><input id="f-featured" type="checkbox"> להציג בראש העמוד (המוצר המומלץ)</label>
+        <p class="hint">רק מוצר אחד יכול להיות מוצג בראש העמוד. סימון כאן מבטל את הסימון במוצר הקודם.</p>
+      </div>
     </div>
     <div class="drawer-foot">
       <button id="delete-btn" class="btn-ghost btn-danger" type="button">מחיקת המוצר</button>
@@ -260,7 +264,7 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
   ];
 
   var $ = function (id) { return document.getElementById(id); };
-  var state = { session: null, products: [], filter: 'all', search: '', editing: null, newImage: null, removeImage: false };
+  var state = { session: null, products: [], filter: 'all', search: '', editing: null, newImage: null, removeImage: false, hasFeatured: false };
 
   // ===== עזרים =====
   function toast(msg, isErr) {
@@ -281,7 +285,8 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
     if (/Invalid login credentials/i.test(m)) return 'המייל או הסיסמה לא נכונים.';
     if (/Email not confirmed/i.test(m)) return 'המייל עוד לא אושר. אשרו אותו ב-Supabase או צרו את המשתמש עם Auto Confirm.';
     if (/Failed to fetch|NetworkError/i.test(m)) return 'אין חיבור לשרת. בדקו את החיבור לאינטרנט.';
-    if (/row-level security|permission denied|not allowed/i.test(m)) return 'אין לחשבון הזה הרשאת מנהל.';
+    if (/permission denied for (table|schema|function)/i.test(m)) return 'חסרות הרשאות גישה במסד (' + m + '). הריצו ב-Supabase את הקובץ fix-admin.sql.';
+    if (/row-level security|not allowed/i.test(m)) return 'אין לחשבון הזה הרשאת מנהל. הריצו ב-Supabase את הקובץ fix-admin.sql עם המייל שלכם.';
     return m || 'משהו השתבש. נסו שוב.';
   }
 
@@ -358,7 +363,7 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
 
   function checkAdmin() {
     return api('/rest/v1/admins?select=user_id').then(function (rows) {
-      if (!rows || !rows.length) throw new Error('החשבון הזה לא מוגדר כמנהל. הריצו את make-admin.sql עם המייל שלכם.');
+      if (!rows || !rows.length) throw new Error('החשבון הזה לא מוגדר כמנהל. הריצו ב-Supabase את הקובץ fix-admin.sql עם המייל שלכם.');
     });
   }
 
@@ -383,6 +388,7 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
     $('grid').innerHTML = '<div class="empty">טוען מוצרים…</div>';
     return api('/rest/v1/products?select=*&order=sort.asc,created_at.asc').then(function (rows) {
       state.products = rows || [];
+      state.hasFeatured = state.products.length > 0 && Object.prototype.hasOwnProperty.call(state.products[0], 'featured');
       renderGrid();
     }).catch(function (e) {
       $('grid').innerHTML = '';
@@ -432,7 +438,7 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
       }
       var tag = document.createElement('span');
       tag.className = 'tag' + (p.in_stock ? '' : ' out');
-      tag.textContent = p.in_stock ? (p.cat === 'box' ? 'מארז' : 'זר') : 'אזל מהמלאי';
+      tag.textContent = p.in_stock ? ((p.featured ? '★ בראש העמוד · ' : '') + (p.cat === 'box' ? 'מארז' : 'זר')) : 'אזל מהמלאי';
       thumb.appendChild(tag);
       card.appendChild(thumb);
 
@@ -551,6 +557,8 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
     $('f-tint').value = p ? p.tint : '#E2E8DD';
     $('f-stock').checked = p ? !!p.in_stock : true;
     $('f-alcohol').checked = p ? !!p.alcohol : false;
+    $('f-featured').checked = p ? !!p.featured : false;
+    $('featured-field').classList.toggle('hidden', !state.hasFeatured);
     $('sizes').innerHTML = '';
     var sizes = p && p.sizes && p.sizes.length ? p.sizes : [{ label: 'קלאסי', price: '' }];
     sizes.forEach(function (s) { sizeRow(s.label, s.price); });
@@ -645,7 +653,7 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
     });
     var occ = [];
     $('occasions').querySelectorAll('input:checked').forEach(function (c) { occ.push(c.value); });
-    return {
+    var out = {
       name: $('f-name').value.trim(),
       cat: $('f-cat').value,
       tagline: $('f-tagline').value.trim(),
@@ -658,6 +666,8 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
       in_stock: $('f-stock').checked,
       alcohol: $('f-alcohol').checked
     };
+    if (state.hasFeatured) out.featured = $('f-featured').checked;
+    return out;
   }
 
   $('edit-form').addEventListener('submit', function (e) {
@@ -689,6 +699,16 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
         headers: { 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
         body: JSON.stringify(data)
       }).then(function (rows) { return rows[0]; });
+    }).then(function (row) {
+      if (data.featured) {
+        return api('/rest/v1/products?featured=eq.true&id=neq.' + encodeURIComponent(row.id), {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ featured: false })
+        }).then(function () {
+          state.products.forEach(function (x) { if (x.id !== row.id) x.featured = false; });
+          return row;
+        });
+      }
+      return row;
     }).then(function (row) {
       if ((state.newImage || state.removeImage) && oldPath && oldPath !== row.image_path) deleteImage(oldPath);
       if (editing) Object.assign(editing, row); else state.products.push(row);

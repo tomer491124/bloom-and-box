@@ -26,7 +26,7 @@ class Component extends DCLogic {
         this.setState({ remote: rows.map((r) => ({
           id: r.id, cat: r.cat === 'bouquet' ? 'bouquet' : 'box', occ: r.occasions || [], name: r.name || '', tagline: r.tagline || '', desc: r.description || '',
           items: r.items || [], sizes: (r.sizes && r.sizes.length ? r.sizes : [{ label: '', price: 0 }]).map((z) => ({ label: z.label || '', price: Number(z.price) || 0 })),
-          tint: r.tint || '#E2E8DD', badge: r.badge || '', photo: '', image: r.image_url || '', alcohol: !!r.alcohol, inStock: r.in_stock !== false
+          tint: r.tint || '#E2E8DD', badge: r.badge || '', photo: '', image: r.image_url || '', alcohol: !!r.alcohol, inStock: r.in_stock !== false, featured: !!r.featured
         })) });
       })
       .catch(() => {});
@@ -116,6 +116,10 @@ class Component extends DCLogic {
   renderVals() {
     const s = this.state;
     const gold = this.props.gold ?? '#D4AF37';
+    const allProducts = this.catalog();
+    const maxPrice = (p) => Math.max.apply(null, p.sizes.map((z) => z.price));
+    const feat = allProducts.find((p) => p.featured) || allProducts.find((p) => /signature/i.test(p.name)) || allProducts.slice().sort((a, b) => maxPrice(b) - maxPrice(a))[0];
+    const featMin = feat ? Math.min.apply(null, feat.sizes.map((z) => z.price)) : 0;
     const FREE = 350;
     const GIFT = 300;
     const cartSub = this.prodSub(s.cart);
@@ -250,6 +254,11 @@ class Component extends DCLogic {
 
     return {
       gold: gold,
+      featName: feat ? feat.name : '',
+      featLine: feat ? (feat.tagline || feat.desc) : '',
+      featPrice: feat ? (feat.sizes.length > 1 ? 'החל מ-' : '') + this.money(featMin) : '',
+      featHasImage: !!(feat && feat.image),
+      featImage: feat && feat.image ? feat.image : '',
       logoState: s.logoHover ? 'is-hover' : '',
       logoEnter: () => this.setState({ logoHover: true }),
       logoLeave: () => this.setState({ logoHover: false }),
@@ -406,13 +415,14 @@ Component.prototype.render = function () {
       <div aria-hidden="true" style={`position: absolute; top: 0; right: 28px; bottom: 56px; left: 64px; border: 1px solid ${v.gold}; border-radius: 2px; opacity: .65`}></div>
       <div style="position: absolute; top: 28px; right: 0; bottom: 24px; left: 92px; border-radius: 2px; overflow: hidden; background: linear-gradient(165deg, #E3EAE0 0%, #F6F3EC 60%, #FFFFFF 100%); box-shadow: 0 50px 90px -50px rgba(27,36,30,.5); display: flex; align-items: flex-end; justify-content: center; padding: 20px">
         <svg aria-hidden="true" viewBox="0 0 120 160" style="position: absolute; top: 12%; left: 22%; width: 56%" fill="none" stroke="#B8941F" stroke-width="0.8" stroke-linecap="round" opacity=".85"><path d="M30 45A30 30 0 0 1 90 45" stroke-dasharray="1 3"></path><path d="M60 150C60 120 58 95 60 62"></path><path d="M60 62C52 52 52 38 60 28C68 38 68 52 60 62Z"></path><path d="M60 62C48 60 41 50 42 38C51 42 57 50 60 62Z"></path><path d="M60 62C72 60 79 50 78 38C69 42 63 50 60 62Z"></path><path d="M60 110C48 108 40 100 37 90C48 90 56 98 60 110Z" stroke="#3F5A48"></path><path d="M60 96C72 94 80 86 83 76C72 76 64 84 60 96Z" stroke="#3F5A48"></path><path d="M60 58V34M58 108L41 92M62 94L80 78" stroke-width=".5"></path></svg>
-        <span style="position: relative; font-size: 12px; letter-spacing: .08em; color: #3F5A48; background: rgba(255,255,255,.85); padding: 6px 14px; border-radius: 999px">[צילום קמפיין: מארז Signature פתוח באור בוקר]</span>
+        <span style="position: relative; font-size: 12px; letter-spacing: .08em; color: #3F5A48; background: rgba(255,255,255,.85); padding: 6px 14px; border-radius: 999px">[צילום: {v.featName}]</span>
+        {(v.featHasImage) ? <><img src={v.featImage} alt={v.featName} style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover" /></> : null}
       </div>
       <div class="bb-float" style="position: absolute; left: 0; bottom: 0; width: 240px; padding: 22px; border-radius: 2px; background: rgba(255,255,255,.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 30px 60px -28px rgba(27,36,30,.45); display: flex; flex-direction: column; gap: 6px">
-        <span class="bb-eyebrow" style="font-size: 10.5px">The Signature</span>
-        <span class="serif" style="font-size: 24px; line-height: 1.15">מארז Signature</span>
-        <span style="font-size: 13.5px; color: #4B514C">פרחים, יין פרימיום וטראפלס בתיבת עץ אגוז.</span>
-        <span class="serif" style="font-size: 22px; color: #1E3A2B">₪890</span>
+        <span class="bb-eyebrow" dir="ltr" style="font-size: 10.5px; align-self: flex-start">Featured</span>
+        <span class="serif" style="font-size: 24px; line-height: 1.15">{v.featName}</span>
+        <span style="font-size: 13.5px; color: #4B514C">{v.featLine}</span>
+        <a href="#shop" class="serif" style="font-size: 22px; color: #1E3A2B; text-decoration: none">{v.featPrice}</a>
       </div>
     </div>
   </section>

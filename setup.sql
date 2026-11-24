@@ -38,6 +38,7 @@ create table if not exists public.products (
   image_path text,
   alcohol boolean not null default false,
   in_stock boolean not null default true,
+  featured boolean not null default false,
   sort integer not null default 100,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -88,6 +89,15 @@ create policy "admins update product images" on storage.objects
 drop policy if exists "admins delete product images" on storage.objects;
 create policy "admins delete product images" on storage.objects
   for delete to authenticated using (bucket_id = 'product-images' and public.is_admin());
+
+alter table public.products add column if not exists featured boolean not null default false;
+
+-- 3א. הרשאות גישה לטבלאות (בפרויקטים חדשים של Supabase הן לא תמיד ניתנות אוטומטית)
+grant usage on schema public to anon, authenticated;
+grant select on public.products to anon, authenticated;
+grant insert, update, delete on public.products to authenticated;
+grant select on public.admins to authenticated;
+grant execute on function public.is_admin() to anon, authenticated;
 
 -- 4. המוצרים הקיימים באתר (רק אם הטבלה ריקה)
 insert into public.products (cat, name, tagline, description, items, occasions, sizes, badge, tint, alcohol, sort)
